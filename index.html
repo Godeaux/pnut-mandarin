@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>漢字 Study — Mandarin SRS</title>
+  <link rel="stylesheet" href="style.css">
+  <meta name="description" content="A spaced-repetition Mandarin Chinese study tool with visual mnemonics">
+  <meta name="theme-color" content="#1a1a2e">
+</head>
+<body>
+  <div id="app">
+    <!-- Top Bar -->
+    <header id="top-bar">
+      <div class="top-bar-left">
+        <h1 class="logo">漢字 <span class="logo-sub">Study</span></h1>
+      </div>
+      <div class="top-bar-right">
+        <button id="btn-theme" class="icon-btn" title="Toggle theme">🌙</button>
+        <button id="btn-search" class="icon-btn" title="Search cards">🔍</button>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav id="main-nav">
+      <button class="nav-tab active" data-view="study">Study</button>
+      <button class="nav-tab" data-view="browse">Browse</button>
+      <button class="nav-tab" data-view="stats">Stats</button>
+      <button class="nav-tab" data-view="manage">Manage</button>
+    </nav>
+
+    <!-- Search Overlay -->
+    <div id="search-overlay" class="overlay hidden">
+      <div class="overlay-content">
+        <div class="search-header">
+          <input type="text" id="search-input" placeholder="Search characters, pinyin, or meaning..." autocomplete="off">
+          <button id="search-close" class="icon-btn">✕</button>
+        </div>
+        <div id="search-results"></div>
+      </div>
+    </div>
+
+    <!-- Study View -->
+    <section id="view-study" class="view active">
+      <div id="study-dashboard">
+        <div class="stat-row">
+          <div class="stat-box">
+            <div class="stat-num" id="stat-due">0</div>
+            <div class="stat-label">Due</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-num" id="stat-new">0</div>
+            <div class="stat-label">New</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-num" id="stat-learned">0</div>
+            <div class="stat-label">Learned</div>
+          </div>
+          <div class="stat-box streak">
+            <div class="stat-num" id="stat-streak">0</div>
+            <div class="stat-label">🔥 Streak</div>
+          </div>
+        </div>
+        <div class="session-stats">
+          <span>Today: <strong id="stat-today-count">0</strong> reviewed</span>
+          <span>Accuracy: <strong id="stat-today-acc">—</strong></span>
+        </div>
+      </div>
+
+      <!-- Category Filters -->
+      <div id="category-filters">
+        <button class="cat-btn active" data-cat="all">All</button>
+        <button class="cat-btn" data-cat="nature">🌿 Nature</button>
+        <button class="cat-btn" data-cat="people">👤 People</button>
+        <button class="cat-btn" data-cat="numbers">🔢 Numbers</button>
+        <button class="cat-btn" data-cat="common">⭐ Common</button>
+        <button class="cat-btn" data-cat="custom">📝 Custom</button>
+      </div>
+
+      <!-- Empty State -->
+      <div id="study-empty" class="empty-state hidden">
+        <div class="empty-icon">🎉</div>
+        <h2>All caught up!</h2>
+        <p>No cards due for review. Come back later or learn new cards.</p>
+        <button id="btn-learn-new" class="btn btn-primary">Learn New Cards</button>
+      </div>
+
+      <!-- Flashcard -->
+      <div id="flashcard-container" class="hidden">
+        <div class="card-progress">
+          <span id="card-progress-text">1 / 10</span>
+          <button id="btn-skip" class="btn btn-sm" title="Skip this card">Skip →</button>
+        </div>
+        <div id="flashcard" class="flashcard">
+          <div class="card-inner">
+            <div class="card-front">
+              <div class="card-category-tag" id="card-cat-tag"></div>
+              <div class="card-character" id="card-char"></div>
+              <div class="card-pinyin" id="card-pinyin"></div>
+              <button id="btn-audio" class="btn btn-sm btn-audio" title="Hear pronunciation">🔊</button>
+              <div class="card-hint">Tap to reveal</div>
+            </div>
+            <div class="card-back">
+              <div class="card-character card-char-sm" id="card-char-back"></div>
+              <div class="card-pinyin" id="card-pinyin-back"></div>
+              <div class="card-meaning" id="card-meaning"></div>
+              <div class="card-divider"></div>
+              <div class="card-mnemonic" id="card-mnemonic"></div>
+              <div class="card-visual" id="card-visual"></div>
+              <div class="card-sound-bridge" id="card-sound-bridge"></div>
+              <div class="card-radicals" id="card-radicals"></div>
+            </div>
+          </div>
+        </div>
+        <div id="rating-buttons" class="rating-buttons hidden">
+          <button class="btn btn-rate btn-again" data-rating="0">
+            <span class="rate-label">Again</span>
+            <span class="rate-time" id="rate-again-time"></span>
+          </button>
+          <button class="btn btn-rate btn-hard" data-rating="1">
+            <span class="rate-label">Hard</span>
+            <span class="rate-time" id="rate-hard-time"></span>
+          </button>
+          <button class="btn btn-rate btn-good" data-rating="2">
+            <span class="rate-label">Good</span>
+            <span class="rate-time" id="rate-good-time"></span>
+          </button>
+          <button class="btn btn-rate btn-easy" data-rating="3">
+            <span class="rate-label">Easy</span>
+            <span class="rate-time" id="rate-easy-time"></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Writing Practice -->
+      <div id="writing-practice" class="hidden">
+        <h3>Writing Practice</h3>
+        <div class="writing-area">
+          <canvas id="writing-canvas" width="300" height="300"></canvas>
+          <div class="writing-controls">
+            <button id="btn-clear-canvas" class="btn btn-sm">Clear</button>
+            <button id="btn-show-strokes" class="btn btn-sm">Show Strokes</button>
+            <button id="btn-close-writing" class="btn btn-sm">Close</button>
+          </div>
+          <div id="stroke-hints" class="stroke-hints hidden"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Browse View -->
+    <section id="view-browse" class="view hidden">
+      <div class="browse-header">
+        <h2>All Cards</h2>
+        <div class="browse-controls">
+          <select id="browse-filter">
+            <option value="all">All Categories</option>
+            <option value="nature">Nature</option>
+            <option value="people">People/Body</option>
+            <option value="numbers">Numbers</option>
+            <option value="common">Common</option>
+            <option value="custom">Custom</option>
+          </select>
+          <select id="browse-sort">
+            <option value="category">By Category</option>
+            <option value="character">By Character</option>
+            <option value="due">By Due Date</option>
+          </select>
+        </div>
+      </div>
+      <div id="browse-grid" class="browse-grid"></div>
+
+      <!-- Card Detail Modal -->
+      <div id="card-detail-modal" class="overlay hidden">
+        <div class="modal">
+          <button class="modal-close" id="detail-close">✕</button>
+          <div id="detail-content"></div>
+          <div class="modal-actions">
+            <button id="btn-toggle-known" class="btn btn-sm">Mark as Known</button>
+            <button id="btn-practice-write" class="btn btn-sm">Practice Writing</button>
+            <button id="btn-detail-audio" class="btn btn-sm">🔊 Listen</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stats View -->
+    <section id="view-stats" class="view hidden">
+      <h2>Statistics</h2>
+      <div class="stats-grid">
+        <div class="stats-card">
+          <h3>Overview</h3>
+          <div class="stats-row"><span>Total cards:</span><strong id="stats-total">0</strong></div>
+          <div class="stats-row"><span>Cards learned:</span><strong id="stats-learned">0</strong></div>
+          <div class="stats-row"><span>Cards known:</span><strong id="stats-known">0</strong></div>
+          <div class="stats-row"><span>Due today:</span><strong id="stats-due">0</strong></div>
+          <div class="stats-row"><span>Current streak:</span><strong id="stats-streak">0 days</strong></div>
+        </div>
+        <div class="stats-card">
+          <h3>Today's Session</h3>
+          <div class="stats-row"><span>Cards reviewed:</span><strong id="stats-session-count">0</strong></div>
+          <div class="stats-row"><span>Correct (Good+Easy):</span><strong id="stats-session-correct">0</strong></div>
+          <div class="stats-row"><span>Accuracy:</span><strong id="stats-session-acc">—</strong></div>
+        </div>
+        <div class="stats-card">
+          <h3>Review Forecast</h3>
+          <div id="forecast-chart" class="forecast-chart"></div>
+        </div>
+        <div class="stats-card">
+          <h3>Category Progress</h3>
+          <div id="category-progress"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Manage View -->
+    <section id="view-manage" class="view hidden">
+      <h2>Manage Deck</h2>
+
+      <div class="manage-section">
+        <h3>Add Custom Card</h3>
+        <form id="add-card-form" class="form-grid">
+          <div class="form-group">
+            <label for="new-char">Character</label>
+            <input type="text" id="new-char" placeholder="e.g. 学" required>
+          </div>
+          <div class="form-group">
+            <label for="new-pinyin">Pinyin</label>
+            <input type="text" id="new-pinyin" placeholder="e.g. xué" required>
+          </div>
+          <div class="form-group">
+            <label for="new-meaning">Meaning</label>
+            <input type="text" id="new-meaning" placeholder="e.g. to study/learn" required>
+          </div>
+          <div class="form-group full-width">
+            <label for="new-mnemonic">Mnemonic Story</label>
+            <textarea id="new-mnemonic" rows="3" placeholder="A memorable story to help remember this character..."></textarea>
+          </div>
+          <div class="form-group full-width">
+            <label for="new-visual">Visual/Emoji Aid</label>
+            <input type="text" id="new-visual" placeholder="e.g. 📖✨ (optional)">
+          </div>
+          <button type="submit" class="btn btn-primary">Add Card</button>
+        </form>
+      </div>
+
+      <div class="manage-section">
+        <h3>Import / Export</h3>
+        <div class="btn-group">
+          <button id="btn-export" class="btn">Export Deck (JSON)</button>
+          <button id="btn-import" class="btn">Import Deck (JSON)</button>
+          <input type="file" id="import-file" accept=".json" class="hidden">
+        </div>
+      </div>
+
+      <div class="manage-section">
+        <h3>Reset</h3>
+        <div class="btn-group">
+          <button id="btn-reset-progress" class="btn btn-danger">Reset All Progress</button>
+          <button id="btn-reset-all" class="btn btn-danger">Reset Everything</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
