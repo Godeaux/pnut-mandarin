@@ -804,6 +804,21 @@ const App = {
     this.isFlipped = !this.isFlipped;
     document.getElementById("flashcard").classList.toggle("flipped", this.isFlipped);
     document.getElementById("rating-buttons").classList.toggle("hidden", !this.isFlipped);
+    this.resizeCardInner();
+  },
+
+  resizeCardInner() {
+    const inner = document.querySelector(".card-inner");
+    if (this.isFlipped) {
+      const back = document.querySelector(".card-back");
+      // Temporarily measure back content height
+      requestAnimationFrame(() => {
+        const h = back.scrollHeight;
+        inner.style.minHeight = Math.max(400, h) + "px";
+      });
+    } else {
+      inner.style.minHeight = "400px";
+    }
   },
 
   rateCard(quality) {

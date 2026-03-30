@@ -357,7 +357,6 @@ body {
 
 .flashcard {
   width: 100%;
-  min-height: 400px;
   cursor: pointer;
   position: relative;
 }
@@ -366,7 +365,7 @@ body {
   position: relative;
   width: 100%;
   min-height: 400px;
-  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), min-height 0.3s ease;
   transform-style: preserve-3d;
 }
 
@@ -379,7 +378,7 @@ body {
   position: absolute;
   inset: 0;
   width: 100%;
-  min-height: 400px;
+  min-height: 100%;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   border-radius: var(--radius);
@@ -399,7 +398,7 @@ body {
 .card-back {
   background: var(--card-back);
   transform: rotateY(180deg);
-  overflow-y: auto;
+  overflow: visible;
   justify-content: flex-start;
   padding-top: 24px;
 }
@@ -460,20 +459,30 @@ body {
   opacity: 0.5;
 }
 
+.card-audio-section {
+  margin-top: auto;
+  width: 100%;
+  padding-top: 8px;
+}
+
+.card-audio-section .btn-audio {
+  margin-top: 8px;
+}
+
 .card-example {
   text-align: center;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .card-example-sentence {
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   color: var(--text-primary);
   margin-bottom: 4px;
   font-weight: 500;
 }
 
 .card-example-breakdown {
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   color: var(--text-secondary);
   line-height: 1.5;
 }
