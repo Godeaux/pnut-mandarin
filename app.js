@@ -493,7 +493,7 @@ const App = {
   variantData: {},       // { char: [1,2,3,4] } — available variants per character
   audioSelections: {},   // { char: { variant: N } or { allBad: true } }
   lastPlayedVariant: 0,  // last variant number played in picker
-  _currentVariantAudio: null, // currently playing variant Audio object
+  _currentAudio: null, // currently playing Audio object (variant or main)
 
   // --- Initialization ---
 
@@ -707,6 +707,12 @@ const App = {
       e.stopPropagation();
       const card = this.studyQueue[this.currentCardIndex];
       if (card) this.speak(card.char);
+    });
+
+    // Stop button
+    document.getElementById("btn-audio-stop").addEventListener("click", (e) => {
+      e.stopPropagation();
+      this.stopAudio();
     });
 
     // Audio picker — variant buttons
@@ -956,6 +962,7 @@ const App = {
   },
 
   rateCard(quality) {
+    this.stopAudio();
     const card = this.studyQueue[this.currentCardIndex];
     if (!card) return;
 
@@ -983,6 +990,7 @@ const App = {
   },
 
   skipCard() {
+    this.stopAudio();
     this.currentCardIndex++;
     if (this.currentCardIndex >= this.studyQueue.length) {
       this.refreshStudyView();
@@ -1196,11 +1204,32 @@ const App = {
 
   // --- Audio (Qwen3 TTS pre-generated) ---
 
+  /** Stop any currently playing audio */
+  stopAudio() {
+    if (this._currentAudio) {
+      this._currentAudio.pause();
+      this._currentAudio.currentTime = 0;
+      this._currentAudio = null;
+    }
+    if ("speechSynthesis" in window) speechSynthesis.cancel();
+    // Reset variant button playing states
+    document.querySelectorAll(".btn-variant").forEach(btn => btn.classList.remove("playing"));
+    // Hide stop button
+    document.getElementById("btn-audio-stop").classList.add("hidden");
+  },
+
+  /** Show the stop button (called when audio starts playing) */
+  _showStopBtn() {
+    document.getElementById("btn-audio-stop").classList.remove("hidden");
+  },
+
   speak(text) {
+    this.stopAudio();
     // Use pre-generated Qwen3 TTS audio files (Serena voice)
     const char = text.trim();
     const audioPath = `audio/${encodeURIComponent(char)}.mp3`;
     const audio = new Audio(audioPath);
+    this._currentAudio = audio;
     audio.onerror = () => {
       // Fallback to Web Speech API if audio file not found
       if (!("speechSynthesis" in window)) {
@@ -1216,6 +1245,8 @@ const App = {
       speechSynthesis.cancel();
       speechSynthesis.speak(utterance);
     };
+    audio.addEventListener("ended", () => { this._currentAudio = null; this.stopAudio(); });
+    this._showStopBtn();
     audio.play();
   },
 
@@ -1247,15 +1278,11 @@ const App = {
   },
 
   playVariant(char, variant) {
-    // Stop any currently playing variant
-    if (this._currentVariantAudio) {
-      this._currentVariantAudio.pause();
-      this._currentVariantAudio = null;
-    }
+    this.stopAudio();
 
     const url = `${SERVER_URL}/audio/variants/${encodeURIComponent(char)}_v${variant}.mp3`;
     const audio = new Audio(url);
-    this._currentVariantAudio = audio;
+    this._currentAudio = audio;
     this.lastPlayedVariant = variant;
 
     // Update button states
@@ -1263,6 +1290,8 @@ const App = {
       btn.classList.toggle("playing", parseInt(btn.dataset.variant) === variant);
     });
 
+    audio.addEventListener("ended", () => { this.stopAudio(); });
+    this._showStopBtn();
     audio.play().catch(() => this.toast("Failed to play variant"));
   },
 

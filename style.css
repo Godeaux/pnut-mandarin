@@ -1098,6 +1098,23 @@ body {
   box-shadow: 0 0 6px var(--accent-green);
 }
 
+/* --- Audio Controls --- */
+.audio-buttons-row {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn-audio-stop {
+  border-color: var(--accent-red) !important;
+  color: var(--accent-red) !important;
+}
+
+.btn-audio-stop:hover {
+  background: rgba(239, 68, 68, 0.15) !important;
+}
+
 /* --- Audio Picker (variant curation) --- */
 .audio-picker {
   margin-top: 10px;
