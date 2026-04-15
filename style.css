@@ -401,6 +401,7 @@ body {
   overflow: visible;
   justify-content: flex-start;
   padding-top: 24px;
+  padding-bottom: 40px;
 }
 
 .card-category-tag {
